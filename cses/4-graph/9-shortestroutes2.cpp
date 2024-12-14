@@ -8,7 +8,6 @@ using namespace std;
 ll n,m,q, a,b,c;
 vector<pii> adj[MAXN];
 ll dist[MAXN][MAXN] = {0};
-bool vis[MAXN][MAXN];
 
 int main(){
 

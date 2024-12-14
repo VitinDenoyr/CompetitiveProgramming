@@ -25,6 +25,7 @@ int main(){
 	while(!pq.empty()){
 		pii at = pq.top(); pq.pop();
 		if(vis[at.second]) continue;
+		if(dist[at.second] != at.first) continue;
 		for(pii viz : adj[at.second]){
 			if(vis[viz.second]) continue;
 			if(dist[viz.second] > dist[at.second] + viz.first){

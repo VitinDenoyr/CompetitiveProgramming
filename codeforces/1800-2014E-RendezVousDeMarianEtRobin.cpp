@@ -19,7 +19,7 @@ bool shortPath(vector<ll>& dist, vector<ll>& distH, int start, ll distCav){
  
 	while(!pq.empty()){
 		pip vert = pq.top(); pq.pop();
-		if((vert.TYP && (distH[vert.IND] != vert.first)) || (!vert.TYP && (dist[vert.IND] != vert.first))) continue;
+		if((vert.TYP && (distH[vert.IND] != vert.first)) || (!vert.TYP && (dist[vert.IND] != vert.first))) continue; //Ignora vértices desatualizados
 		if(vert.TYP == 0){
 			vis[vert.IND] = true;
 		} else {

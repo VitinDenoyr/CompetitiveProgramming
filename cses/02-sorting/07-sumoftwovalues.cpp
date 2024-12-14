@@ -1,40 +1,33 @@
 #include <bits/stdc++.h>
 using namespace std;
-#define ll long long
 #define pii pair<int,int>
  
 int main(){
     
     int n, s; cin >> n >> s;
-    vector<pii> v;
+    vector<pii> v (n, {0,0});
     for(int i = 0; i < n; i++){
-        int k;
-        cin >> k;
-        v.push_back({k,i}); 
+		int k; cin >> k;
+		v[i] = {k, i+1};
     }
     sort(v.begin(),v.end());
-    bool couted = false;
-    for(int i = 0; i < n-1; i++){
-        int l = i+1, r = n-1, obj = s - v[i].first;
-        while(l < r){
-            int mid = (l+r)/2;
-            if(v[mid].first > obj){
-                r = mid-1;
-            } else if(v[mid].first < obj){
-                l = mid+1;
-            } else {
-                l = mid; r = mid;
-            }
-        }
-        if(obj == v[l].first){
-            cout << v[i].second+1 << " " << v[l].second+1 << "\n";
-            couted = true;
-            break;
-        }
-    }
-    if(!couted){
-        cout << "IMPOSSIBLE\n";
-    }
+
+	int l = 0, r = n-1;
+	while(true){ //Repita o processo
+		if(v[l].first + v[r].first == s && l != r){ //Encontramos a soma
+			cout << v[l].second << " " << v[r].second << "\n";
+			return 0; 
+		} else if(v[l].first + v[r].first < s){ //Precisamos aumentar a soma
+			l++;
+		} else { //Precisamos diminuir
+			r--;
+		}
+
+		if(l >= r){
+			cout << "IMPOSSIBLE\n";
+			return 0;
+		}
+	}
  
     return 0;
 }

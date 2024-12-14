@@ -1,43 +1,38 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
-int n,k;
+int n, k;
 
-int mod(int a, int b){
-	return (a%b)+b*(a%b==0);
-}
-
-void vivo(int m){
+void solve(){
 	vector<vector<int>> v;
-	vector<int> ev;
-	int sq = sqrt(m);
-	for(int i = 0; i < m; i++){
-		if(i%sq == 0) v.push_back(ev);
-		v[i/sq].push_back(i+1);
+	int s = sqrt(n);
+	for(int i = 0; i < n; i++){
+		if(i%s == 0) v.push_back(vector<int>()); //Início de linha
+		v[i/s].push_back(i+1); //Adiciona a criança na linha correspondente
 	}
 
-	int atl = 0, atc = 0;
-	for(int i = 0; i < m; i++){
-		int add;
-		add = (k)%(m-i);
-		while(atc+add >= v[atl].size()){
-			add -= v[atl].size();
-			atl = (atl+1)%(v.size());
+	int L = 0, C = 0;
+	for(int m = n; m >= 1; m--){
+		int dX = k%m;
+		while(C + dX >= v[L].size()){
+			dX -= v[L].size(); //Volta as casas correspondentes
+			L = (L+1)%(v.size()); //Próxima linha
 		}
-		atc += add;
-		cout << v[atl][atc] << " ";
-		v[atl].erase(v[atl].begin() + atc);
+		C += dX; //Quando chegar aqui, implica que essa linha tem posição C existente
+		cout << v[L][C] << " \n"[m == 1]; //Essa foi a criança removida
+		v[L].erase(v[L].begin()+C); //Apaga do vetor
+		if(C == v[L].size()){ //Ajusta C caso seja a última posição da linha e algum elemento foi apagado
+			L = (L+1)%(v.size());
+			C = 0;
+		}
 	}
-	
 }
 
 int main() {
 
-	ios::sync_with_stdio(false);
-	cin.tie(nullptr); cout.tie(nullptr);
-
 	cin >> n >> k;
-    vivo(n);
+	solve();
 
     return 0;
+
 }

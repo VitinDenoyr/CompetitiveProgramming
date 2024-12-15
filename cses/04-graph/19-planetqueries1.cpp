@@ -1,31 +1,35 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
-#define MAXN 200005
-#define prllvec(vtr) for(auto k : vtr){cout << k << ' ';}; cout << endl
 
-ll n, q, nxt[MAXN][31];
+int v[200005][31] = {0}; //Time limit apertado, estático é melhor que vector
 
 int main(){
-	ios_base::sync_with_stdio(false); cin.tie(nullptr); cout.tie(nullptr);
-	cin >> n >> q;
-	for(ll i = 1; i <= n; i++){
-		cin >> nxt[i][0];
+
+	ios::sync_with_stdio(false); cin.tie(nullptr); cout.tie(nullptr);
+
+	int n,q; cin >> n >> q;
+	map<int,int> mp; mp[1] = 0;
+
+	for(int i = 1; i <= n; i++){
+		int d; cin >> d;
+		v[i][0] = d;
 	}
-	for(ll r = 1; r <= 30; r++){
-		for(ll i = 1; i <= n; i++){
-			nxt[i][r] = nxt[nxt[i][r-1]][r-1];
+
+	for(int p = 1; p <= 30; p++){
+		mp[(1<<p)] = p;
+		for(int i = 1; i <= n; i++){
+			v[i][p] = v[v[i][p-1]][p-1];
 		}
 	}
-	for(ll i = 0; i < q; i++){
-		ll x,k; cin >> x >> k;
-		for(ll b = 30; b >= 0; b--){
-			if((k&(ll)((ll)1<<b)) != 0){
-				x = nxt[x][b];
-				k -= (1<<b);
-			}
+
+	for(int i = 1; i <= q; i++){
+		int t, k; cin >> t >> k;
+		while(k > 0){
+			t = v[t][mp[(k&(-k))]];
+			k -= (k&(-k));
 		}
-		cout << x << "\n";
+		cout << t << "\n";
 	}
 
 	return 0;

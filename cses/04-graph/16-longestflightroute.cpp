@@ -1,52 +1,61 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
-#define MAXN 100005
- 
-int n,m;
-vector<int> adj[MAXN];
-bool met[MAXN]; int nxt[MAXN], siz[MAXN];
- 
-void dfs(int a){
-	for(int v : adj[a]){
-		if(met[v]){
-			if(siz[a] < siz[v]+1){
-				siz[a] = siz[v]+1;
-				nxt[a] = v;
-			}
-		} else {
-			dfs(v);
-			if(siz[a] < siz[v]+1){
-				siz[a] = siz[v]+1;
-				nxt[a] = v;
-			}
-		}
+#define pii pair<int,int>
+
+vector<int> vis, order, inits;
+vector<pii> path;
+vector<vector<int>> adj, radj;
+
+void dfs(int v){
+	if(vis[v]) return;
+	vis[v] = 1;
+	for(int u : adj[v]){
+		dfs(u);
 	}
-	met[a] = true;
-	if(siz[a] == 0) siz[a] = -1;
+	order.push_back(v);
 }
- 
+
+void getPath(int v, int n){
+	if(path[v].second > 0) getPath(path[v].second,n);
+	cout << v << " \n"[v == n];
+}
+
 int main(){
- 
-	cin >> n >> m;
-	for(int i = 0; i < m; i++){
-		int a,b;
-		cin >> a >> b;
+
+	int n,m; cin >> n >> m;
+	adj = vector<vector<int>> (n+1, vector<int>());
+	radj = vector<vector<int>> (n+1, vector<int>());
+	path = vector<pii> (n+1, {-n*5,0});
+	inits = vector<int> (n+1, 1);
+	vis = vector<int> (n+1, 0);
+
+	for(int i = 1; i <= m; i++){
+		int a,b; cin >> a >> b;
 		adj[a].push_back(b);
+		radj[b].push_back(a);
+		inits[b] = 0;
 	}
-	siz[n] = 1; met[n] = 1; dfs(1);
-	if(siz[1] > 0){
-		cout << siz[1] << "\n";
-		int at = 1;
-		for(int i = 0; i < siz[1]-1; i++){
-			cout << at << " ";
-			at = nxt[at];
+
+	for(int i = 1; i <= n; i++){
+		if(inits[i]) dfs(i);
+	}
+
+	path[1] = {1,0};
+	for(int i = 0; i < n; i++){
+		int u = order[n-1-i];
+		for(int v : radj[u]){
+			if(path[v].first >= path[u].first){
+				path[u] = {path[v].first+1, v};
+			}
 		}
-		cout << at << "\n";
-	} else {
-		cout << "IMPOSSIBLE\n";
 	}
-	
- 
+	if(path[n].first <= 0){
+		cout << "IMPOSSIBLE\n";
+	} else {
+		cout << path[n].first << "\n";
+		getPath(n,n);
+	}
+
 	return 0;
 }

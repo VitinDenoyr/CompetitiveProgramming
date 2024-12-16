@@ -1,7 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
-#define MAXN 100005
 
 int n,m;
 vector<int> order, prv;

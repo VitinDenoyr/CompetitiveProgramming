@@ -1,64 +1,41 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
-const int INF = 1000000001;
-
-struct SegTree {
-	int len; vector<int> v;
-	vector<int>* members;
-
-	SegTree(int m, vector<int>* memb){
-		len = m;
-		v = vector<int> (4*len,INF);
-		members = memb;
-		construct(1,len,1);
-	}
-
-	void construct(int x1, int xn, int xi){
-		if(x1 == xn){
-			v[xi] = (*members)[x1];
-		} else {
-			int mid = (x1+xn)/2;
-			construct(x1,mid,2*xi);
-			construct(mid+1,xn,2*xi+1);
-			v[xi] = min(v[2*xi],v[2*xi+1]);
-		}
-	}
-
-	int query(int l, int r, int x1, int xn, int xi){
-		if(x1 > r || xn < l) return INF;
-		if(l <= x1 && r >= xn) return v[xi];
-		int mid = (x1+xn)/2;
-		int r1 = query(l,r,x1,mid,2*xi), r2 = query(l,r,mid+1,xn,2*xi+1);
-		return min(r1,r2);
-	}
-
-	void update(int ind, int val, int x1, int xn, int xi){
-		v[xi] = min(v[xi],val);
-		if(x1 != xn){
-			int mid = (x1+xn)/2;
-			if(ind <= mid){
-				update(ind,val,x1,mid,2*xi);
-			} else {
-				update(ind,val,mid+1,xn,2*xi+1);
-			}
-		}
-	}
-};
+const int INF = 1000000007;
 
 int main(){
 
 	int n,q; cin >> n >> q;
-	vector<int> v (n+1);
+	vector<int> v (n+1, 0);
+
+	//Calcula o tamanho máximo de intervalo necessário para todo inteiro de 1 à N = piso do log
+	vector<int> logg (n+1, 0); int currentLog = 0;
+	for(int i = 3; i <= n; i++){
+		if(((i-1)&(-i+1)) == i-1) currentLog++; //Aumenta após potencias de 2
+		logg[i] = currentLog;
+	}
+
+	vector<vector<int>> sparse (n+1, vector<int>(currentLog, 0));
+	//Leitura do vetor e linha 0 da sparse table
 	for(int i = 1; i <= n; i++){
 		cin >> v[i];
+		sparse[i][0] = v[i];
 	}
-	SegTree stree(n,&v);
 
-	while(q--){
-		int a,b;
-		cin >> a >> b;
-		cout << stree.query(a,b,1,n,1) << "\n";
+	//Calcula o restante da sparse table
+	for(int i = 1; i <= currentLog; i++){
+		for(int j = 1; j <= n; j++){
+			if(j + (1<<(i-1)) <= n){
+				sparse[j][i] = min(sparse[j+(1<<(i-1))][i-1],sparse[j][i-1]);
+			} else {
+				sparse[j][i] = sparse[j][i-1];
+			}
+		}
+	}
+
+	for(int iq = 1; iq <= q; iq++){
+		int a,b; cin >> a >> b;
+		cout << min(sparse[a][logg[b-a+1]], sparse[b - (1<<logg[b-a+1]) + 1][logg[b-a+1]]) << "\n";
 	}
 
 	return 0;

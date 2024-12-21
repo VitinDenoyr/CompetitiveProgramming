@@ -1,194 +1,86 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
-#define MAXN 1002
-#define INF 10000007
 #define pii pair<int,int>
- 
-int n, m, qtM = 0; pii start;
-char tile[MAXN][MAXN];
-int vis[MAXN][MAXN], visInd = 1;
-pii prv[MAXN][MAXN];
-vector<pii> borderList, monsterList;
-vector<int> distBorder;
-int dist[MAXN][MAXN], mdist[MAXN][MAXN];
- 
-int av[4] = {1,0,-1,0}, bv[4] = {0,-1,0,1};
-string conv = "DLUR";
- 
-bool isBorder(int a, int b){
-	return (a == 1 || b == 1 || a == n || b == m);
-}
- 
-bool invalid(int a, int b){
-	return (a > n || b > m || a < 1 || b < 1);
-}
- 
-void bfs(int a, int b){
-	queue<pii> q;
-	q.push({a,b});
-	vis[a][b] = true;
-	while(!q.empty()){
-		pii p = q.front(); q.pop();
-		a = p.first, b = p.second;
-		for(int i = 0; i < 4; i++){
-			int a0 = a + av[i], b0 = b + bv[i];
-			if(!invalid(a0,b0) && tile[a0][b0] == '.' && !vis[a0][b0]){
-				vis[a0][b0] = 1;
-				dist[a0][b0] = dist[a][b] + 1;
-				prv[a0][b0] = {a,b};
-				q.push({a0,b0});
-				if(isBorder(a0,b0)){
-					borderList.push_back({a0,b0});
-					distBorder.push_back(dist[a0][b0]);
-				}
-			}
-		}
+
+struct triple {
+	int x, y; char type;
+	triple(char a, int b, int c){
+		x = b; y = c;
+		type = a;
 	}
-}
- 
-pii checkForMonsters(){
-	for(int k = 0; k < borderList.size(); k++){
-		visInd++;
- 		bool continueK = false;
-		pii pr = borderList[k];
-		queue<pii> q; q.push(pr);
-		vis[pr.first][pr.second] = visInd;
-		dist[pr.first][pr.second] = 0;
-		while(!q.empty()){
-			pii p = q.front(); q.pop();
-			int a = p.first, b = p.second;
-			for(int i = 0; i < 4; i++){
-				int a0 = a + av[i], b0 = b + bv[i];
-				if(!invalid(a0,b0) && tile[a0][b0] != '#' && vis[a0][b0] < visInd && dist[a][b] < distBorder[k]){
-					vis[a0][b0] = visInd;
-					dist[a0][b0] = dist[a][b] + 1;
-					q.push({a0,b0});
-					if(tile[a0][b0] == 'M'){
-						continueK = true;
-						break;
-					}
-				}
-			}
-			if(continueK) break;
-		}
-		if(continueK == false) return pr;
-	}
-	return {-1,-1};
+};
+
+int n,m;
+vector<vector<char>> maze, state;
+vector<vector<int>> tp;
+int dx[4] = {0, 1, 0, -1}, dy[4] = {1, 0, -1, 0};
+char dir[4] = {'R','D','L','U'};
+
+bool isBorder(int i, int j){
+	return (i == 1 || i == n || j == 1 || j == m);
 }
 
-pii checkForEndings(){
-	for(int k = 0; k < monsterList.size(); k++){
-		visInd++;
-		pii pr = monsterList[k];
-		queue<pii> q; q.push(pr);
-		vis[pr.first][pr.second] = visInd;
-		mdist[pr.first][pr.second] = 0;
-		while(!q.empty()){
-			pii p = q.front(); q.pop();
-			int a = p.first, b = p.second;
-			for(int i = 0; i < 4; i++){
-				int a0 = a + av[i], b0 = b + bv[i];
-				if(!invalid(a0,b0) && tile[a0][b0] != '#' && vis[a0][b0] < visInd){
-					vis[a0][b0] = visInd;
-					mdist[a0][b0] = mdist[a][b] + 1;
-					q.push({a0,b0});
-					if(isBorder(a0,b0) && dist[a0][b0] >= mdist[a0][b0]){
-						dist[a0][b0] = INF;
-						tile[a0][b0] = '#';
-						break;
-					}
-				}
-			}
-		}
-	}
-	for(int k = 0; k < borderList.size(); k++){
-		pii bd = borderList[k];
-		if(dist[bd.first][bd.second] < INF) return bd;
-	}
-	return {-1,-1};
-}
-
-pii check(){
-	for(int k = 0; k < borderList.size(); k++){
-		visInd++;
- 		bool continueK = false;
-		pii pr = borderList[k];
-		queue<pii> q; q.push(pr);
-		vis[pr.first][pr.second] = visInd;
-		dist[pr.first][pr.second] = 0;
-		while(!q.empty()){
-			pii p = q.front(); q.pop();
-			int a = p.first, b = p.second;
-			for(int i = 0; i < 4; i++){
-				int a0 = a + av[i], b0 = b + bv[i];
-				if(!invalid(a0,b0) && tile[a0][b0] != '#' && vis[a0][b0] < visInd && dist[a][b] < distBorder[k]){
-					vis[a0][b0] = visInd;
-					dist[a0][b0] = dist[a][b] + 1;
-					q.push({a0,b0});
-					if(tile[a0][b0] == 'M'){
-						continueK = true;
-						break;
-					}
-				}
-			}
-			if(continueK) break;
-		}
-		if(continueK == false) return pr;
-	}
-	return {-1,-1};
-}
- 
 int main(){
- 
+
 	cin >> n >> m;
+	maze = vector<vector<char>> (n+2, vector<char> (m+2, '#'));
+	state = vector<vector<char>> (n+2, vector<char> (m+2, '1')); //inalterado,  inalcançável = 0,1
+	tp = vector<vector<int>> (n+2, vector<int> (m+2, -1));
+	queue<triple> q, waiting;
+
 	for(int i = 1; i <= n; i++){
 		for(int j = 1; j <= m; j++){
-			cin >> tile[i][j];
-			if(tile[i][j] == 'A'){
-				start = {i,j};
-				tile[i][j] = '.';
-			} else if(tile[i][j] == 'M'){
-				qtM++; monsterList.push_back({i,j});
+			cin >> maze[i][j];
+			if(maze[i][j] == 'M'){
+				q.push(triple('M',i,j));
+			} else if(maze[i][j] == 'A'){
+				waiting.push(triple('H',i,j));
+			} else {
+				state[i][j] = '0';
 			}
 		}
 	}
-	if(isBorder(start.first,start.second)){
-		cout << "YES\n0\n";
+
+	while(!waiting.empty()){
+		q.push(waiting.front());
+		waiting.pop();
+	}
+
+	int x = -1,y = -1;
+	while(!q.empty()){
+		triple nx = q.front(); q.pop();
+		if(isBorder(nx.x,nx.y) && nx.type == 'H'){
+			cout << "YES\n";
+			x = nx.x; y = nx.y;
+			break;
+		}
+		for(int t = 0; t < 4; t++){
+			int a = nx.x + dx[t], b = nx.y + dy[t];
+			if(state[a][b] == '0' && maze[a][b] == '.'){
+				state[a][b] = '1'; tp[a][b] = t;
+				q.push(triple(nx.type,a,b));
+			}
+		}
+	}
+
+	if(x == -1 && y == -1){
+		cout << "NO\n";
 		return 0;
 	}
- 
-	bfs(start.first,start.second);
-	
-	pii res;
-	if(monsterList.size() > borderList.size()){
-		res = checkForMonsters();
-	} else {
-		res = checkForEndings();
+
+	stack<char> st;
+	while(tp[x][y] != -1){
+		int k = tp[x][y];
+		st.push(dir[k]);
+		x -= dx[k]; y -= dy[k];
 	}
-	if(res.first == -1 && res.second == -1){
-		cout << "NO\n";
-	} else {
-		cout << "YES\n";
- 
-		vector<int> pathway;
-		while(res != start){
-			for(int i = 0; i < 4; i++){
-				int pa = prv[res.first][res.second].first, pb = prv[res.first][res.second].second;
-				if(pa + av[i] == res.first && pb + bv[i] == res.second){
-					pathway.push_back(i);
-					res.first -= av[i];
-					res.second -= bv[i];
-					break;
-				}
-			}
-		}
-		cout << pathway.size() << "\n";
-		for(int z = pathway.size()-1; z >= 0; z--){
-			cout << conv[pathway[z]];
-		}
-		cout << "\n";
+
+	cout << st.size() << "\n";
+	while(!st.empty()){
+		cout << st.top(); st.pop();
 	}
- 
+	cout << "\n";
+
 	return 0;
 }

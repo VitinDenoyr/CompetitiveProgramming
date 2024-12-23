@@ -1,86 +1,85 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
-#define INF 1000000006
- 
-struct fenwick {
-    fenwick(int n){
-        len = n;
-        p = vector<int> (len,0);
-    }
-    vector<int> p; int len;
-    void update(int ind, int inc){ //incrementa inc no indice ind
-        if(ind == 0) p[0] += inc;
-        while(ind > 0 && ind < len){
-            p[ind] += inc;
-            ind += ind&(-ind);
-        }
-    }
-    int query(int i1, int i2){ //Soma de i1 a i2
-        if(i1 == 0){
-            int resp = 0;
-            while(i2 > 0){
-                resp += p[i2];
-                i2 -= i2&(-i2);
-            }
-            return (resp + p[0]);
-        }
-        return query(0,i2) - query(0,i1-1);
-    }
+#define pii pair<int,int>
+
+struct triple {
+	int t, a, b;
+	triple(int _a, int _b, int _t) :t(_t), a(_a), b(_b){}
 };
- 
-bool comp(vector<int> va, vector<int> vb){ //Ordem crescente de início e decrescente de final
-	if(va[0] < vb[0]) return true;
-	if(va[0] > vb[0]) return false;
-	if(va[1] > vb[1]) return true;
-	return false;
+
+bool comp(triple x, triple y){
+	if(x.a < y.a) return true;
+	if(x.a > y.a) return false;
+	return x.b > y.b;
 }
- 
+
+int n;
+vector<triple> range;
+
+//Fenwick tree que responde queries "quantos arrays tem final menor que X"
+struct Fenwick {
+	int len, tot; vector<int> v;
+	Fenwick(int _n){
+		len = _n+1; tot = 0;
+		v = vector<int> (len, 0);
+	}
+	//Adiciona um intervalo [l,r] nos considerados, mas só precisamos saber de r
+	void update(int r){
+		tot++;
+		while(r < len){
+			v[r]++;
+			r += r&(-r);
+		}
+	}
+	//Pergunta quantos intervalos tem final menor ou igual a r
+	int query(int r){
+		int resp = 0;
+		while(r > 0){
+			resp += v[r];
+			r -= r&(-r);
+		}
+		return resp;
+	}
+};
+
 int main(){
- 
-    ios_base::sync_with_stdio(false);
-    cin.tie(nullptr); cout.tie(nullptr);
- 
-	int n,a,b;
-	vector<vector<int>> v;
+
 	cin >> n;
-	for(int i = 0; i < n; i++){
-		cin >> a >> b;
-		v.push_back({a,b,i});
+	range = vector<triple> (n+1, triple(0,0,0));
+	map<int,int> conv; vector<int> vals; int qt = 0;
+	for(int i = 1; i <= n; i++){
+		int a,b; cin >> a >> b;
+		range[i] = {a,b,i};
+		vals.push_back(a); vals.push_back(b);
 	}
-	sort(v.begin(),v.end(),comp);
- 
-	int menorApos[n] = {0}, maiorAntes[n] = {0};
-    int pos[n] = {0}; //posição do i-ésimo cara originalmente na nova ordenação
-    set<int> fin; //finais de conjunto que existem
-	for(int i = 0; i < n; i++){
-		pos[v[i][2]] = i;
-        fin.insert(v[i][1]);
+
+	//Faz a compressão de coordenadas para facilitar a fenwick tree
+	sort(vals.begin(),vals.end());
+	for(int k : vals) conv[k] = ++qt;
+	for(int i = 1; i <= n; i++){
+		range[i] = triple(conv[range[i].a],conv[range[i].b],range[i].t);
 	}
-    
-    unordered_map<int,int> mp; //mp[i] -> o i-ésimo menor cara tem valor tal
-    int ct = 0; //existem ct finais diferentes
-    for(auto fn : fin){
-        mp[fn] = ct++; 
-    }
- 
-    fenwick ftree(ct), ftree2(ct);
-    for(int i = 0; i < n; i++){
-        maiorAntes[v[i][2]] = ftree.query(mp[v[i][1]],ct-1);
-        ftree.update(mp[v[i][1]],1);
- 
-        menorApos[v[n-i-1][2]] = ftree2.query(0,mp[v[n-i-1][1]]);
-        ftree2.update(mp[v[n-i-1][1]],1);
-    }
-	
-	for(int i = 0; i < n-1; i++){
-		cout << menorApos[i] << " ";
+
+	//Ordena os intervalos por ordem de início e secundariamnete por ordem de final, ambos de forma crescente
+	sort(range.begin(),range.end(),comp);
+	vector<int> inAns (n+1, 0), outAns (n+1, 0);
+	Fenwick f(qt), g(qt);
+
+	//Para cada intervalo, faz uma query entre os intervalos que começam depois dele em quantos terminam antes dele
+	for(int i = n; i >= 1; i--){
+		inAns[range[i].t] = f.query(range[i].b);
+		f.update(range[i].b);
 	}
-    cout << menorApos[n-1] << "\n";
-	for(int i = 0; i < n-1; i++){
-		cout << maiorAntes[i] << " ";
+
+	//Para cada intervalo, faz uma query entre os intervalos que começam antes dele quantos terminam depois
+	for(int i = 1; i <= n; i++){
+		outAns[range[i].t] = g.tot - g.query(range[i].b-1);
+		g.update(range[i].b);
 	}
-    cout << maiorAntes[n-1] << "\n";
- 
+
+	for(int i = 1; i <= n; i++) cout << inAns[i] << " \n"[i == n];
+	for(int i = 1; i <= n; i++) cout << outAns[i] << " \n"[i == n];
+
 	return 0;
 }

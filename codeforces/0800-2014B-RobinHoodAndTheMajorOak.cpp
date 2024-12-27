@@ -15,8 +15,5 @@ int main(){
 		}
 	}
 
-	// 1 I 2 I 3 P 4 P a quantidade de impars tem q ser par
-
-
 	return 0;
 }

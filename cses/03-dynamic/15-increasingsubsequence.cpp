@@ -54,15 +54,5 @@ int main(){
     ftree.update(mask[vc[n-1]],acabInd[n-1]);
     cout << trueMax << "\n";
  
-    /*
-    acabInd = {1,2}
-    achei uma sequência que acaba em 1 e tem 1 elemento
-    [0,1,1] = {0 até 0 = 0}, {1 até 1 = 1}, {1 até 2 = 1}
-    procura a maior entre as que acabam em 2-1 = 1 ou menos: 1, logo, temos uma com 2 elementos que termina em 2 
-    achei uma sequência que acaba em 2 e tem 2 elementos
-    [0,1,2] = {0 até 0 = 0}, {1 até 1 = 1}, {1 até 2 = 2}
-    procura a maior entre as que acabam em 3-1 = 2 ou menos: 2, logo, temos uma com 3 elementos que termina em 3 
-    */
- 
     return 0;
 }

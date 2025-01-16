@@ -2,87 +2,89 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
+#define INF 1000000000000000009ll
 #define pii pair<int,int>
-#define pip pair<ll,pair<int,int>>
-#define INF 100000000000000009ll
-#define IND second.first
-#define TYP second.second
- 
-int n,m,h;
-vector<bool> horse;
-vector<vector<pii>> adj;
- 
-bool shortPath(vector<ll>& dist, vector<ll>& distH, int start, ll distCav){
-	priority_queue<pip,vector<pip>,greater<pip>> pq;
-	vector<int> vis (n+1, 0), visH (n+1, 0);
-	pq.push({0,{start,0}}); dist[start] = 0;
- 
-	while(!pq.empty()){
-		pip vert = pq.top(); pq.pop();
-		if((vert.TYP && (distH[vert.IND] != vert.first)) || (!vert.TYP && (dist[vert.IND] != vert.first))) continue; //Ignora vértices desatualizados
-		if(vert.TYP == 0){
-			vis[vert.IND] = true;
-		} else {
-			visH[vert.IND] = true;
-		}
-		for(pii vz : adj[vert.IND]){
-			if(!vis[vz.second]){
-				if(dist[vert.IND] + vz.first < dist[vz.second]){
-					dist[vz.second] = dist[vert.IND] + vz.first;
-					pq.push({dist[vz.second],{vz.second,0}});
-				}
-			}
-			if(!visH[vz.second]){
-				if(distH[vert.IND] + vz.first/2 < distH[vz.second]){
-					distH[vz.second] = distH[vert.IND] + vz.first/2;
-					pq.push({distH[vz.second],{vz.second,1}});
-				}
-				if(horse[vert.IND] && (dist[vert.IND] + vz.first/2 < distH[vz.second])){
-					distH[vz.second] = dist[vert.IND] + vz.first/2;
-					pq.push({distH[vz.second],{vz.second,1}});
-				}
-			}
-		}
+
+void solve(int tt){
+	
+	int n,m,h; cin >> n >> m >> h;
+
+	//Inicialização de vetores
+	vector<bool> horse (n+1, 0);
+	vector<vector<ll>> dist (n+1, vector<ll>(4, INF));
+	vector<vector<pii>> adj (n+1, vector<pii>());
+
+	//Leitura dos cavalos
+	for(int i = 1; i <= h; i++){
+		int k; cin >> k; horse[k] = true;	
 	}
- 
-	if(!vis[n+1 - start]) return false;
-	return true;
+
+	//Leitura das arestas
+	for(int i = 1; i <= m; i++){
+		int a,b,c; cin >> a >> b >> c;
+		adj[a].push_back({c,b});
+		adj[b].push_back({c,a});
+	}
+
+	//Dijkstra
+	auto shortPath = [&](int st, int id)->bool{
+		//Estruturas do Dijkstra
+		vector<vector<bool>> vis (n+1, vector<bool>(4, 0));
+		priority_queue<array<ll,3>,vector<array<ll,3>>,greater<array<ll,3>>> pq;
+		
+		//Um nó/vetor é dado por (Distancia, Destino, Tem Cavalo)
+		pq.push({0,st,0});
+		while(!pq.empty()){
+			auto [dis, des, hor] = pq.top(); pq.pop();
+			int t = id*2 + hor; // Essa pessoa nesse transporte
+			if(vis[des][t]) continue;
+
+			//Distância definitiva
+			vis[des][t] = 1;
+			dist[des][t] = dis;
+
+			//Calcula todas as ações possíveis de serem feitas: A pé -> A pé, A pé -> Cavalo, Cavalo -> Cavalo
+			for(pii u : adj[des]){
+				//Manter o meio de transporte
+				ll travelCost = (hor ? u.first/2 : u.first);
+				if(!vis[u.second][t] && (dist[u.second][t] > dist[des][t] + travelCost)){
+					pq.push({dist[des][t] + travelCost, u.second, hor});
+				}
+
+				//Mudar de a pé para cavalo: tem que existir um cavalo, chegar a pé no lugar anterior e o destino a cavalo não pode estar visitado
+				bool condition = horse[des] && (!hor) && !vis[u.second][2*id+1];
+				if(condition && (dist[u.second][2*id+1] > dist[des][2*id] + u.first/2)){
+					pq.push({dist[des][2*id] + u.first/2, u.second, 1});
+				}
+			}
+		}
+		return vis[n+1-st][2*id];
+	};
+
+	bool canReachHer = shortPath(1,0);
+	if(!canReachHer){
+		cout << -1 << "\n";
+		return;
+	} else {
+		shortPath(n,1);
+		ll bestPoint = INF;
+		for(int i = 1; i <= n; i++){
+			ll minA = min(dist[i][0],dist[i][1]), minB = min(dist[i][2],dist[i][3]);
+			if(max(minA,minB) < bestPoint){
+				bestPoint = max(minA,minB);
+			}
+		}
+		cout << bestPoint << "\n";
+	}
 }
- 
+
 int main(){
- 
-	ios::sync_with_stdio(false);
-	cin.tie(nullptr); cout.tie(nullptr);
+
+	ios::sync_with_stdio(false); cin.tie(nullptr);
+
 	int t; cin >> t;
 	while(t--){
-		cin >> n >> m >> h;
-		horse = vector<bool> (n+1,0);
-		vector<ll> distA (n+1, INF), distB (n+1, INF);
-		vector<ll> distHA (n+1, INF), distHB (n+1, INF);
-		ll distCavA = INF, distCavB = INF;
-		adj = vector<vector<pii>> (n+1, vector<pii>());
-		for(int i = 1; i <= h; i++){
-			int vi; cin >> vi; horse[vi] = true;
-		}
-		for(int i = 1; i <= m; i++){
-			int a,b,c; cin >> a >> b >> c;
-			adj[a].push_back({c,b});
-			adj[b].push_back({c,a});
-		}
-		bool reach = shortPath(distA,distHA,1,distCavA);
-		if(!reach){
-			cout << -1 << "\n";
-		} else {
-			shortPath(distB,distHB,n,distCavB);
-			ll minDist = INF;
-			for(int i = 1; i <= n; i++){
-				ll minA = min(distA[i],distHA[i]), minB = min(distB[i],distHB[i]);
-				if(max(minA,minB) < minDist){
-					minDist = max(minA,minB);
-				}
-			}
-			cout << minDist << "\n";
-		}
+		solve(t);
 	}
  
 	return 0;

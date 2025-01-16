@@ -5,7 +5,7 @@ using namespace std;
 #define INF 1000000000000000009ll
 #define pii pair<int,int>
 
-void solve(int tt){
+void solve(){
 	
 	int n,m,h; cin >> n >> m >> h;
 
@@ -36,7 +36,7 @@ void solve(int tt){
 		pq.push({0,st,0});
 		while(!pq.empty()){
 			auto [dis, des, hor] = pq.top(); pq.pop();
-			int t = id*2 + hor; // Essa pessoa nesse transporte
+			int t = id*2 + hor; // Essa pessoa nesse transporte. [Marian sem cavalo, Marian com cavalo, Robin sem cavalo, Robin com cavalo].
 			if(vis[des][t]) continue;
 
 			//Distância definitiva
@@ -68,6 +68,7 @@ void solve(int tt){
 	} else {
 		shortPath(n,1);
 		ll bestPoint = INF;
+		//Tenta achar o melhor vértice para se encontrarem
 		for(int i = 1; i <= n; i++){
 			ll minA = min(dist[i][0],dist[i][1]), minB = min(dist[i][2],dist[i][3]);
 			if(max(minA,minB) < bestPoint){
@@ -84,7 +85,7 @@ int main(){
 
 	int t; cin >> t;
 	while(t--){
-		solve(t);
+		solve();
 	}
  
 	return 0;

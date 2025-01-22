@@ -1,3 +1,5 @@
+//https://codeforces.com/contest/2055/problem/C
+//ALTERA O LINK NO DOC
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long

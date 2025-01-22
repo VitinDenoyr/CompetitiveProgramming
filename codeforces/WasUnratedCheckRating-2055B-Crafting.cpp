@@ -1,3 +1,5 @@
+//https://codeforces.com/contest/2055/problem/B
+//ALTERA O GITHUB
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long

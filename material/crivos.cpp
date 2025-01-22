@@ -65,6 +65,7 @@ int main(){
 			biggestPrimeDiv[j] = i;
 		}
 	}
+	print(biggestPrimeDiv, "Maior Divisor Primo [1 ~ 20]", 20);
 
 	return 0;
 }

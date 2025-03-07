@@ -1,5 +1,4 @@
 //https://codeforces.com/problemset/problem/2060/F
-//ATUALIZA O DOC E O GITHUB LINK
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long

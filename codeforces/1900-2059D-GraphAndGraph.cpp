@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <array>
 using namespace std;
 #define ll long long
 #define pii pair<int,int>
@@ -37,7 +38,8 @@ void solve(){
 	}
 
 	vector<vector<int>> dist (n+1, vector<int>(n+1, INF)); dist[s1][s2] = 0;
-	priority_queue<array<int,3>,vector<array<int,3>>,greater<array<int,3>>> pq; pq.push({0,s1,s2});
+	priority_queue<array<int,3>,vector<array<int,3>>,greater<array<int,3>>> pq;
+	array<int,3> arz = {0, s1, s2}; pq.push(arz);
 	while(!pq.empty()){
 		array<int,3> nx = pq.top(); pq.pop();
 		if(dist[nx[1]][nx[2]] < nx[0]) continue;

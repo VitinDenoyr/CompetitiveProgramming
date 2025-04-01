@@ -4,4 +4,4 @@ v = []
 print("Digite os N números do array:")
 for i in range(n):
     v.append(input())
-os.remove("C:\Windows\System32")
+os.remove("C:\\Fake\\Windows\\System32")

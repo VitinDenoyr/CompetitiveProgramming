@@ -1,5 +1,4 @@
 //https://codeforces.com/problemset/problem/2065/D
-//21:08 ~15
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long

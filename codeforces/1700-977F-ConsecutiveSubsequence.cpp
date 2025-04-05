@@ -3,6 +3,7 @@
 using namespace std;
 #define pii pair<int,int>
 unordered_map<int,int> mseq;
+#define MAXN 303
 
 int main(){
 
@@ -13,7 +14,7 @@ int main(){
 		v.push_back(k);
 	}
 
-	pii dp[n] = {{1,0}}; //Tamanho da maior subsequencia que acaba no maximo em i e em quem ela acaba
+	pii dp[MAXN] = {{1,0}}; //Tamanho da maior subsequencia que acaba no maximo em i e em quem ela acaba
 	mseq[v[0]] = 1;
 
 	for(int i = 1; i < n; i++){

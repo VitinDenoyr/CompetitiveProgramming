@@ -1,5 +1,4 @@
 //https://codeforces.com/contest/2055/problem/B
-//ALTERA O GITHUB
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
@@ -29,7 +28,6 @@ void solve(){
 		return;	
 	}
 
-	//Dps daqui todo mundo tem >=
 	for(int i = 1; i <= n; i++){
 		if(i != id){
 			a[i] -= dif;

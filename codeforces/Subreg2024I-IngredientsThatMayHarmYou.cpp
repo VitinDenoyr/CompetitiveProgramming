@@ -1,59 +1,78 @@
 //https://codeforces.com/gym/105327/problem/I
 #include <bits/stdc++.h>
 using namespace std;
-const int MOD = 1000000007;
-const int MAX = 1000001;
-const int MAXN = 100001;
-int pow2[100001] = {1};
+#define ll long long
+const ll maxi = 1000000;
+const ll mod = 1000000007;
+
+ll fexpo(ll a, ll b){
+	ll res = 1;
+	while(b > 0){
+		if(b%2){
+			res = (res * a)%mod;
+			b--;
+		} else {
+			a = (a*a)%mod;
+			b /= 2;
+		}
+	}
+	return res;
+}
  
 int main(){
  
 	int n; cin >> n;
-	vector<int> v (n), freq(MAX,0);
-	for(int i = 0; i < n; i++){
-		cin >> v[i];
-		freq[v[i]]++;
+	vector<int> f (n+1, 0);
+	vector<int> qt (maxi+1, 0);
+	for(int i = 1; i <= n; i++){
+		cin >> f[i];
+		qt[f[i]]++;
 	}
-	for(int i = 1; i <= MAXN; i++){
-		pow2[i] = (2ll*pow2[i-1])%MOD;
-	}
- 
-	vector<int> mult (MAX,0);
-	for(int i = 2; i < MAX; i++){
-		for(int j = i; j < MAX; j += i){
-			mult[i] += freq[j];
-		}
-	}
- 
-	int queries; cin >> queries;
-	for(int i = 0; i < queries; i++){
-		int ans = n, p; cin >> p;
-		//Encontre quantos numeros tem fator primo em comum com p e tire de ans
-		vector<int> primes;
-		for(int f = 2; f*f <= p; f++){ //Fatoração muito rápida: pior caso O(sqrt(N)), mas nesse pior caso, acelera o resto, então na prática é simplesmente >> bem rápido <<
-			if(p%f == 0){
-				primes.push_back(f);
-				while(p%f == 0) p /= f;
+
+	vector<int> gpDiv (maxi+1, 1);
+	for(int i = 2; i <= maxi; i++){
+		if(gpDiv[i] == 1){
+			for(int j = i; j <= maxi; j += i){
+				gpDiv[j] = i;
 			}
 		}
-		if(p > 1) primes.push_back(p);
-		//Agora primes guarda os fatores primos de p. Preciso somar então para cada combinação deles quantos múltiplos dessa combinação tem, mas com soma alternada pelo principio de inclusão-exclusão: Soma se tem quantidade impar de fatores primos e subtrai caso contrário.
-		int psize = primes.size(), sub = 0;
-		for(int mask = (1 << psize)-1; mask >= 1; mask--){
-			int prod = 1, sign = -1;
-			//Dada uma configuração de primos escolhidos, veremos qual o produto deles
-			for(int bit = 0; bit < psize; bit++){
-				if(((1<<bit)&mask) != 0){
-					prod *= primes[bit];
-					sign *= -1; //Se ele deve ser somado ou subtraido para evitar repetições
+	}
+
+	vector<int> qtMult (maxi+1, 0);
+	for(int i = 2; i <= maxi; i++){
+		for(int j = i; j <= maxi; j += i){
+			qtMult[i] += qt[j];
+		}
+	}
+
+	int q; cin >> q;
+	for(int _ = 1; _ <= q; _++){
+		int	allergy; cin >> allergy;
+		if(allergy == 1){
+			cout << fexpo(2,n) << "\n";
+			continue;
+		}
+
+		vector<int> primes;
+		while(allergy > 1){
+			if(primes.empty() || gpDiv[allergy] != primes[primes.size()-1]) primes.push_back(gpDiv[allergy]);
+			allergy /= gpDiv[allergy];
+		}
+
+		ll tot = 0;
+		for(int mask = ((1ll<<primes.size()) - 1); mask >= 1; mask--){
+			ll multpl = 1, sign = -1;
+			for(int i = 0; i < primes.size(); i++){
+				if((mask & (1ll<<i)) != 0){
+					multpl *= primes[i];
+					sign *= -1;
 				}
 			}
-			sub += mult[prod]*sign;
+			tot += qtMult[multpl]*sign;
 		}
-		ans -= sub;
-		//Calcula quantos subconjuntos de ans elementos existem
-		cout << pow2[ans] << "\n";
+		cout << fexpo(2,n - tot) << "\n";
+
 	}
- 
+
 	return 0;
 }

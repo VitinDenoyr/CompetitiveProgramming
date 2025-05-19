@@ -2,122 +2,166 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
-#define pii pair<ll,ll>
 const ll mod = 1000000007ll;
 
 int main(){
 
+	// Leitura do N e criação do vetor de posições.
 	ios::sync_with_stdio(false); cin.tie(nullptr);
 	ll n; cin >> n;
 	vector<ll> a (n+1, 0);
-	//lpdiv = largest prime divisor, ord = quantos multiplos esse valor tem até N
-	//priord = quantos primos tem ordem i
-	//fact = primos em sua fatoração, fact_prod = produto deles
-	//association[i] = o primo i carrega a função de quem
-	//whoWith[i] = a função i está associada a qual primo
-	//mp[i] = quantos caras tem os primos que dão produto i (posições)
-	vector<ll> association (n+1, 0), whoWith (n+1, 0);
-	vector<ll> priord (n/2 + 1, 0), fatorial (n+1, 1);
-	vector<vector<ll>> fact (n+1, vector<ll>());
-	vector<ll> fact_prod (n+1, 1);
-	vector<ll> lpdiv (n+1, 0);
-	vector<ll> ord (n+1, 0);
-	map<ll,ll> mp;
-
-	for(ll i = 2; i <= n; i++){
+	
+	// Calcula o fatorial dos números em O(N)
+	vector<ll> fatorial (n+1, 1);
+	for(int i = 2; i <= n; i++){
 		fatorial[i] = (fatorial[i-1] * i)%mod;
 	}
 
-	fact[1].push_back(1);
-	fact_prod[1] = 1; ord[1] = 1;
-	priord[1]++; lpdiv[1] = 1;
-	mp[1]++;
-	for(ll i = 2; i <= n; i++){
-		ord[i] = (n/i);
-		if(lpdiv[i] == 0){ //primo
-			priord[ord[i]]++;
-			lpdiv[i] = i;
-			fact[i].push_back(i);
-			fact_prod[i] *= i;
-			for(ll j = 2*i; j <= n; j += i){
-				lpdiv[j] = i;
-			}
-		} else { //composto
-			fact[i] = fact[i/lpdiv[i]];
-			fact_prod[i] = fact_prod[i/lpdiv[i]]; 
-			if((i/lpdiv[i]) % lpdiv[i] != 0){
-				fact[i].push_back(lpdiv[i]);
-				fact_prod[i] *= lpdiv[i];
+	// Maior divisor primo com Crivo de Erastótenes: O(NloglogN)
+	vector<int> maiorPrimoQueDivide (n+1, 0);
+	for(int i = 2; i <= n; i++){
+		if(maiorPrimoQueDivide[i] == 0){
+			maiorPrimoQueDivide[i] = i;
+			for(int j = 2*i; j <= n; j += i){
+				maiorPrimoQueDivide[j] = i;
 			}
 		}
-		mp[fact_prod[i]]++;
 	}
 
-	function<bool(ll,ll)> testFor = [&](ll pos, ll val) -> bool{
-		ll xid = fact[pos].size()-1, yid = fact[val].size()-1;
-		if(xid != yid) return false;
-		while(xid >= 0 || yid >= 0){
-			//próximo fator de pos já associado
-			if(xid >= 0 && association[fact[pos][xid]] != 0){
-				if(val % association[fact[pos][xid]] == 0){
-					xid--;
+	// Encontra a ordem dos números de 2 até N
+	vector<int> ordem (n+1, 0);
+	vector<int> qtPrimosDeOrdem (n/2+1, 0);
+	for(int i = 2; i <= n; i++){
+		ordem[i] = (n/i) - 1;
+		if(maiorPrimoQueDivide[i] == i){
+			qtPrimosDeOrdem[ordem[i]]++;
+		}
+	}
+
+	// Encontra os primos na fatoração de cada número
+	vector<vector<int>> fatoracao (n+1, vector<int>());
+	vector<ll> produtoDaFatoracaoDe (n+1, 1);
+	for(int i = 2; i <= n; i++){
+		if(maiorPrimoQueDivide[i] == i){
+			fatoracao[i].push_back(i);
+			produtoDaFatoracaoDe[i] *= i;
+		} else {
+			// Coloca os mesmos fatores do divisor
+			int divisor = i/maiorPrimoQueDivide[i];
+			fatoracao[i] = fatoracao[divisor];
+			produtoDaFatoracaoDe[i] = produtoDaFatoracaoDe[divisor];
+
+			// Se esse primo for novo, coloca ele também
+			if(divisor % maiorPrimoQueDivide[i] != 0){
+				fatoracao[i].push_back(maiorPrimoQueDivide[i]);
+				produtoDaFatoracaoDe[i] *= maiorPrimoQueDivide[i];
+			}
+		}
+	}
+
+	// Encontra quantos valores tem exatamente uma certa combinação de primos
+	map<ll,ll> qtNumerosComProduto;
+	for(int i = 2; i <= n; i++){
+		qtNumerosComProduto[produtoDaFatoracaoDe[i]]++;
+	}
+
+	// Precisamos considerar o 1 como primo
+	maiorPrimoQueDivide[1] = 1; ordem[1] = 0;
+	qtPrimosDeOrdem[0]++; fatoracao[1] = {1};
+	produtoDaFatoracaoDe[1] = 1; qtNumerosComProduto[1] = 1;
+
+	// O primo pi (nas posições) foi substituído por:
+	vector<int> posicao_i_tem (n+1, 0);
+	// O primo qi (nos valores) está substituindo a posição:
+	vector<int> primo_i_substituiu (n+1, 0);
+
+	// Valida se uma posição "pos" pode ter valor "val"
+	function<bool(int,int)> validacao = [&](int pos, int val) -> bool{
+		// Vamos olhar primo a primo, do maior para o menor, pois primos
+		// maiores possuem uma ordem igual ou menor que os menores
+		int proximoPrimoPos = fatoracao[pos].size()-1;
+		int proximoPrimoVal = fatoracao[val].size()-1;
+		if(proximoPrimoPos != proximoPrimoVal) return false; // Bijeção Impossível
+
+		// Repita enquanto houver primo para decidir
+		while(proximoPrimoPos >= 0 || proximoPrimoVal >= 0){
+
+			// Se o próximo primo de pos já tem valor definido:
+			int c1 = posicao_i_tem[fatoracao[pos][max(proximoPrimoPos,0)]];
+			if(proximoPrimoPos >= 0 && c1 != 0){
+				// Se esse valor se encontra na substituição:
+				if(val % c1 == 0){
+					proximoPrimoPos--;
 					continue;
 				} else {
 					return false;
 				}
 			}
-			//próximo fator de val já associado
-			if(yid >= 0 && whoWith[fact[val][yid]] != 0){
-				if(pos % whoWith[fact[val][yid]] == 0){
-					yid--;
+
+			// Se o próximo primo de val já tem valor definido:
+			int c2 = primo_i_substituiu[fatoracao[val][max(proximoPrimoVal,0)]];
+			if(proximoPrimoVal >= 0 && c2 != 0){
+				// Se esse valor se encontra na posição:
+				if(pos % c2 == 0){
+					proximoPrimoVal--;
 					continue;
 				} else {
 					return false;
 				}
 			}
-			//nenhum fator associado, então podemos associar um no outro
-			if(yid >= 0 && xid >= 0){
-				if(ord[fact[pos][xid]] == ord[fact[val][yid]]){
-					association[fact[pos][xid]] = fact[val][yid];
-					priord[ord[fact[pos][xid]]]--;
-					whoWith[fact[val][yid]] = fact[pos][xid];
-					xid--; yid--;
+			
+			// Se ambos não tem fator associado, então associa um ao outro
+			if(proximoPrimoPos >= 0 && proximoPrimoVal >= 0){
+				// Toma os primos que estamos vendo
+				int pi = fatoracao[pos][proximoPrimoPos];
+				int qi = fatoracao[val][proximoPrimoVal];
+				
+				// Devem ter a mesma ordem, ou a bijeção é impossível
+				if(ordem[pi] == ordem[qi]){
+					primo_i_substituiu[qi] = pi;
+					posicao_i_tem[pi] = qi;
+					qtPrimosDeOrdem[ordem[pi]]--; //Menos uma opção de substituição
+					proximoPrimoPos--; proximoPrimoVal--;
 					continue;
 				} else {
 					return false;
 				}
 			} else {
+				// Impossível associar, então a bijeção é impossível
 				return false;
 			}
 		}
-		return true;
+		return true; // Conseguiu associar corretamente
 	};
 
-	bool done = false;
-	for(ll i = 1; i <= n; i++){
+	// Leitura da entrada e verificação de compatibilidade dos primos
+	bool impossivel = false;
+	for(int i = 1; i <= n; i++){
 		cin >> a[i];
-		if(done) continue;
+		if(impossivel) continue;
 		if(a[i] != 0){
-			done = !(testFor(i,a[i]));
-			mp[fact_prod[i]]--;
+			impossivel = !(validacao(i,a[i]));
+			// Esse produto tem uma opção a menos já definida
+			qtNumerosComProduto[produtoDaFatoracaoDe[i]]--;
 		}
 	}
 
-	ll resp = 1;
-	if(done){
+	ll resposta = 1;
+	if(impossivel){
 		cout << 0 << "\n";
 		return 0;
 	} else {
-		for(ll i = 1; i <= n/2; i++){
-			while(priord[i] > 0){
-				resp = (resp * priord[i])%mod;
-				priord[i]--;
-			}
+		//Calcula as possíveis associações de primos restantes
+		for(int i = 0; i < n/2; i++){
+			resposta = (resposta * fatorial[qtPrimosDeOrdem[i]])%mod;
 		}
-		for(auto x : mp){
-			resp = (resp * fatorial[x.second])%mod;
+
+		//Calcula as possíveis associações de posições com produto igual
+		for(pair<ll,ll> x : qtNumerosComProduto){
+			resposta = (resposta * fatorial[x.second])%mod;
 		}
-		cout << resp << "\n";
+
+		cout << resposta << "\n";
 	}
 
 	return 0;

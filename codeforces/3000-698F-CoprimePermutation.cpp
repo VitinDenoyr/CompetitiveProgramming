@@ -17,7 +17,7 @@ int main(){
 		fatorial[i] = (fatorial[i-1] * i)%mod;
 	}
 
-	// Maior divisor primo com Crivo de Erastótenes: O(NloglogN)
+	// Maior divisor primo com Crivo de Eratóstenes: O(NloglogN)
 	vector<int> maiorPrimoQueDivide (n+1, 0);
 	for(int i = 2; i <= n; i++){
 		if(maiorPrimoQueDivide[i] == 0){

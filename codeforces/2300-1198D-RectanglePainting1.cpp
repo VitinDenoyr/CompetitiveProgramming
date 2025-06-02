@@ -2,39 +2,48 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
+#define vi vector<int>
+#define vvi vector<vector<int>>
+#define vvvi vector<vector<vector<int>>>
+#define vvvvi vector<vector<vector<vector<int>>>>
 
 int main(){
 
 	int n; cin >> n;
-	vector<vector<char>> t(n, vector<char>(n,'.'));
-	for(int i = 0; i < n; i++){
-		for(int j = 0; j < n; j++){
-			cin >> t[i][j];
+	vector<vector<int>> a (n+1, vector<int> (n+1, 0));
+	for(int i = 1; i <= n; i++){
+		string st; cin >> st;
+		for(int j = 1; j <= n; j++){
+			if(st[j-1] == '#'){
+				a[i][j] = 1;
+			}
 		}
 	}
-	int dp[n][n][n][n] = {0};
+
+	vvvvi dp (n+2, vvvi (n+2, vvi (n+2, vi (n+2, 0))));
 
 	for(int w = 1; w <= n; w++){
 		for(int h = 1; h <= n; h++){
-			for(int i = 0; i <= n-w; i++){
-				for(int j = 0; j <= n-h; j++){
-					if(w == 1 && h == 1){
-						dp[i][j][w][h] = (t[i][j] == '#');
+			for(int x = 1; x+w-1 <= n; x++){
+				for(int y = 1; y+h-1 <= n; y++){
+					if(w == h && w == 1){
+						dp[x][y][w][h] = a[x][y];
 					} else {
-						dp[i][j][w][h] = max(w,h);
-						for(int k = 1; k <= w-1; k++){
-							dp[i][j][w][h] = min(dp[i][j][w][h], dp[i][j][k][h]+dp[i+k][j][w-k][h]);
+						dp[x][y][w][h] = max(w,h);
+						for(int p = 1; p < h; p++){
+							dp[x][y][w][h] = min(dp[x][y][w][h], dp[x][y][w][p] + dp[x][y+p][w][h-p]);
 						}
-						for(int k = 1; k <= h-1; k++){
-							dp[i][j][w][h] = min(dp[i][j][w][h], dp[i][j][w][k]+dp[i][j+k][w][h-k]);
+						for(int q = 1; q < w; q++){
+							dp[x][y][w][h] = min(dp[x][y][w][h], dp[x][y][q][h] + dp[x+q][y][w-q][h]);
 						}
 					}
-					//cout << i << "," << j << " de [" << w << "," << h << "] = " << dp[i][j][w][h] << "\n";
 				}
 			}
 		}
 	}
-	cout << dp[0][0][n][n] << "\n";
 
+	cout << dp[1][1][n][n] << "\n";
+	
 	return 0;
+
 }

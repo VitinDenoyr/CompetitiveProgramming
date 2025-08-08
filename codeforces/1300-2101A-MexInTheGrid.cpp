@@ -3,55 +3,56 @@
 using namespace std;
 #define ll long long
 #define pii pair<int,int>
-
+ 
 void solve(){
-
-	int n; cin >> n;
-	vector<vector<int>> grid (n+1, vector<int>(n+1, 0));
-	int nx = 1;
-	function<void(int,int,int,int)> fix = [&](int x1, int y1, int xn, int yn){
-		int up = y1 - 1, down = n - yn;
-		int left = x1 - 1, right = n - xn;
-		if(up == left && down == right && up == right && up == 0) return;
-		if(right >= left && right >= up && right >= down){
-			for(int k = y1; k <= yn; k++){
-				grid[k][xn+1] = nx++;
+ 
+	ll n; cin >> n;
+	vector<int> dx = {1,0,-1,0}, dy = {0,-1,0,1};
+	vector<vector<int>> grid (n+1, vector<int> (n+1, 0));
+	ll nx = 0;
+	
+	function<int(int,int,int,int)> putE = [&](int qt, int dir, int px, int py) -> int {
+		for(int i = 1; i <= qt; i++){
+			grid[px][py] = nx++;
+			if(i == qt){
+				if(dir != 3){
+					dir++;
+				} else {
+					px += dx[dir];
+					py += dy[dir];
+					dir = 0;
+					qt += 2;
+					break;
+				}
 			}
-			fix(x1,y1,xn+1,yn);
-		} else if(down >= left && down >= right && down >= up){
-			for(int k = x1; k <= xn; k++){
-				grid[yn+1][k] = nx++;
-			}
-			fix(x1,y1,xn,yn+1);
-		} else if(left >= up && left >= right && left >= down){
-			for(int k = y1; k <= yn; k++){
-				grid[k][x1-1] = nx++;
-			}
-			fix(x1-1,y1,xn,yn);
-		} else {
-			for(int k = x1; k <= xn; k++){
-				grid[y1-1][k] = nx++;
-			}
-			fix(x1,y1-1,xn,yn);
+			px += dx[dir];
+			py += dy[dir];
 		}
+		if(nx != n*n){
+			putE(qt,dir,px,py);
+		}
+		return 0;
 	};
-	fix((n+1)/2,(n+1)/2,(n+1)/2,(n+1)/2);
-
+	
+	if(n%2){
+		grid[(n+1)/2][(n+1)/2] = 0; nx++;
+		if(n>1) putE(2,0,(n+1)/2,(n+1)/2 + 1);
+	} else {
+		putE(1,0,n/2+1,n/2+1);
+	}
+ 
 	for(int i = 1; i <= n; i++){
 		for(int j = 1; j <= n; j++){
-			cout << grid[i][j] << " \n"[j==n]; 
+			cout << grid[i][j] << " \n"[j==n];
 		}
 	}
-
 }
-
-int main(){
-
-	ios::sync_with_stdio(false); cin.tie(nullptr);
+ 
+int32_t main(){
 	int t; cin >> t;
-	while (t--){
+	while(t--){
 		solve();
 	}
+ 
 	return 0;
-
 }

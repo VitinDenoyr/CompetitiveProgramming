@@ -8,6 +8,10 @@ vector<vector<pii>> adj;
 vector<int> deg, path, vis;
 
 void dfs(int u){
+	cout << u << ": ";
+	for(int i = 1; i <= n; i++){
+		cout << deg[i] << " \n"[i==n]; 
+	}
 	while(deg[u] > 0){
 		deg[u]--;
 		int v = adj[u][deg[u]].first, ind = adj[u][deg[u]].second;

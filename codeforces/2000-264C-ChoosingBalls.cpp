@@ -4,40 +4,68 @@ using namespace std;
 #define ll long long
 #define pll pair<ll,ll>
 #define ppll pair<pll,pll>
-#define MAXN 100005
-#define MAXQ 505
-#define INF 100000000000000005
- 
-ll color[MAXN], value[MAXN];
- 
-int main(){
- 
-	int n,q; cin >> n >> q;
-	for(int i = 0; i < n; i++){
-		cin >> value[i];
+const ll inf = 100000000000000000ll;
+
+bool rev(pll a, pll b){
+	return a.first > b.first;
+}
+
+void solve(){
+
+	ll n,q; cin >> n >> q;
+	vector<ll> v (n+1, 0), c (n+1, 0);
+	for(int i = 1; i <= n; i++){
+		cin >> v[i];
 	}
-	for(int i = 0; i < n; i++){
-		cin >> color[i];
+	for(int i = 1; i <= n; i++){
+		cin >> c[i];
 	}
-	for(int iq = 0; iq < q; iq++){
+
+	for(int i = 1; i <= q; i++){
 		ll a,b; cin >> a >> b;
-		vector<ll> dp (MAXN, -INF);
-		ll m1 = 0, m2 = 0;
-		for(int i = 0; i < n; i++){
-			ll pre = dp[color[i]];
-			if(m1 != pre){
-				dp[color[i]] = max(dp[color[i]]+a*value[i],dp[color[i]]);
-				dp[color[i]] = max(m1+b*value[i],dp[color[i]]);
-				m2 = max(m2,dp[color[i]]);
-				if(m1 < m2) swap(m1,m2);
+
+		vector<pll> best = {{0,0},{-inf,n+1}};
+		vector<ll> cmax (n+1, -inf);
+		for(int i = 1; i <= n; i++){
+			ll same = cmax[c[i]] + a*v[i];
+
+			pll bestalt;
+			if(best[0].second == c[i]){
+				bestalt = best[1];
 			} else {
-				dp[color[i]] = max(m1+a*value[i],dp[color[i]]);
-				dp[color[i]] = max(m2+b*value[i],dp[color[i]]);
-				m1 = max(m1,dp[color[i]]);
+				bestalt = best[0];
 			}
+
+			ll emp = b*v[i];
+
+			ll mx = max(same,max(bestalt.first,0ll) + b*v[i]);
+
+			if(c[i] != best[1].second && c[i] != best[0].second){
+				best.push_back({mx,c[i]});
+				sort(best.begin(),best.end(),rev);
+				best.pop_back();
+			} else if(c[i] == best[1].second){
+				best[1].first = max(best[1].first,mx);
+				if(best[1].first > best[0].first){
+					swap(best[0],best[1]);
+				}
+			} else {
+				best[0].first = max(best[0].first,mx);
+			}
+			cmax[c[i]] = max(cmax[c[i]],mx);
 		}
-		cout << m1 << "\n";
+		cout << max(best[0].first,0ll) << "\n";
 	}
- 
+
+}
+
+int main(){
+
+	ios::sync_with_stdio(false); cin.tie(nullptr);
+	int t = 1;
+	while (t--){
+		solve();
+	}
 	return 0;
+
 }

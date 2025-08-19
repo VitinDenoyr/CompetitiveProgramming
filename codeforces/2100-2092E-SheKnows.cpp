@@ -55,8 +55,6 @@ void solve(){
 	ll qtQ = (4 - qtQuina);
 
 	ll qtM = (((n-2ll)*(m-2ll))%(mod-1) - qtMeio + 2ll*(mod-1))%(mod-1);
-	
-	//cout << qtB << " x " << qtQ << " x " << qtM << "\n";
 
 	ll expo = ((qtB + qtQ + qtM)%(mod-1) + (mod-1))%(mod-1);
 

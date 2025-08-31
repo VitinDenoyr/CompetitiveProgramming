@@ -7,55 +7,48 @@ using namespace std;
 void solve(){
 
 	ll n; cin >> n;
-	ll nxt = 1, mx = 1, prv = 1;
-	priority_queue<vector<ll>,vector<vector<ll>>,greater<vector<ll>>> pq;
-	queue<ll> nm; nm.push(1);
-	for(ll i = 1; i <= n; i++){
-		nm.push(prv + i);
-		prv += i;
-	}
 
-	ll tl = 1, tc = 1;
-	function<pii()> allocateTable = [&]() -> pii{
-		if(nxt == nm.front()){
-			tl = mx++, tc = 1;
-			nm.pop();
-		} else {
-			tl--; tc++;
-		}
-		pq.push({3*(tc+tl-1)-1,3*tc-1,3*tl-2});
-		pq.push({3*(tc+tl-1)-1,3*tc-2,3*tl-1});
-		pq.push({3*(tc+tl)-1,  3*tc-1,3*tl-1});
-		nxt++;
-		return {3*tc-2,3*tl-2};
+	vector<int> x (n+1, 0), y (n+1, 0);
+	
+	int diag = 1, c = 1;
+	priority_queue<array<int,3>,vector<array<int,3>>,greater<array<int,3>>> pq;
+
+	function<int()> view = [&]() -> int{
+		int l = diag+1-c;
+		return 3*l-2 + 3*c-2;
 	};
 
-	function<int()> nextSeat = [&]() -> int{
-		int tl2, tc2;
-		if(nxt == nm.front()){
-			tl2 = mx, tc2 = 1;
+	function<pii()> newt = [&]() -> pii{
+		int l = diag+1-c;
+		pq.push({3*l-1+3*c-2,3*c-2,3*l-1});
+		pq.push({3*l-2+3*c-1,3*c-1,3*l-2});
+		pq.push({3*l+3*c,3*c-1,3*l-1});
+		pii p = {3*c-2,3*l-2};
+		if(l == 1){
+			diag++;
+			c = 1;
 		} else {
-			tl2 = tl - 1; tc2 = tc + 1;
+			c++;
 		}
-		return (3*tc2-2) + (3*tl2-2) - 1;
+		return p;
 	};
 
-	for(ll i = 1; i <= n; i++){
-		int a; cin >> a;
-		if(a == 0){
-			pii x = allocateTable();
-			cout << x.first << " " << x.second << "\n";
+	for(int i = 1; i <= n; i++){
+		int h; cin >> h;
+		if(h == 0 || pq.empty()){
+			pii re = newt();
+			y[i] = re.second; x[i] = re.first;
 		} else {
-			if(pq.empty() || nextSeat() < pq.top()[0]){
-				pii x = allocateTable();
-				cout << x.first << " " << x.second << "\n";
+			if(view() < pq.top()[0] || (view() == pq.top()[0] && 3*(c)-2 < pq.top()[1]) || (view() == pq.top()[0] && 3*(c)-2 == pq.top()[1] && 3*(diag+1-c)-2 < pq.top()[2])){
+				pii re = newt();
+				y[i] = re.second; x[i] = re.first;
 			} else {
-				cout << pq.top()[1] << " " << pq.top()[2] << "\n";
+				y[i] = pq.top()[2]; x[i] = pq.top()[1];
 				pq.pop();
 			}
 		}
+		cout << x[i] << " " << y[i] << "\n";
 	}
-
 }
 
 int main(){
